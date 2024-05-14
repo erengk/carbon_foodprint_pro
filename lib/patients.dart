@@ -1,17 +1,17 @@
+import 'package:carbon_foodprint_pro/login_screen.dart';
+import 'package:carbon_foodprint_pro/utils/customColors.dart';
 import 'package:flutter/material.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:carbon_foodprint_pro/utils/customColors.dart';
 
-import 'login_screen.dart';
+class Patients extends StatefulWidget {
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+  const Patients({super.key});
 
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  State<Patients> createState() => _PatientsState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _PatientsState extends State<Patients> {
   TextEditingController poliklinikController = TextEditingController();
   TextEditingController ameliyatController = TextEditingController();
   TextEditingController servisController = TextEditingController();
@@ -143,7 +143,7 @@ class _AdminPageState extends State<AdminPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: _onLogoutPressed,
         ),
-        title: const Text('Data Input Form')
+        title: const Text('Patient Predictions')
     );
   }
   void _onLogoutPressed() async {

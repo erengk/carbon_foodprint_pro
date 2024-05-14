@@ -22,13 +22,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Cauldron',
-      routes: {
-        "/loginScreen": (context) => LoginScreen(),
-        "/adminPage": (context) => AdminPage()
-      },
+      title: 'Carbon Foodprint Pro',
       theme: ThemeData(
-        scaffoldBackgroundColor: CustomColors.scaffoldBackgroundColor,
+        scaffoldBackgroundColor: CustomColors.bodyBackgroundColor,
       ),
       home: Scaffold(
         body: LoginScreen(),

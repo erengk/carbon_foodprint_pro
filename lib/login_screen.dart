@@ -1,4 +1,5 @@
 import 'package:carbon_foodprint_pro/adminPage.dart';
+import 'package:carbon_foodprint_pro/homeScreen.dart';
 import 'package:carbon_foodprint_pro/service/authenticationService.dart';
 import 'package:carbon_foodprint_pro/widgets/popup.dart';
 import 'package:carbon_foodprint_pro/utils/customColors.dart';
@@ -25,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: CustomColors.scaffoldBackgroundColor,
+        backgroundColor: CustomColors.appBarColor,
         title: const Text('Giriş Yap'),
       ),
       backgroundColor: CustomColors.bodyBackgroundColor,
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AdminPage(),
+                        builder: (context) => HomeScreen(),
                       ),
                     );
                   }
