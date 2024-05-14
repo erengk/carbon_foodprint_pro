@@ -20,10 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    var height = MediaQuery.of(context).size.height;
     String logoImage = "assets/logo.png";
 
     return Scaffold(
@@ -32,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
         title: const Text('Giriş Yap'),
       ),
       backgroundColor: CustomColors.bodyBackgroundColor,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(26),
         child: Form(
           child: Column(
@@ -42,23 +39,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(
                 height: 50,
               ),
-              Expanded(
-                flex: 4,
-                child: Container(
-                  child: TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(hintText: "kullanıcı adı"),
-                  ),),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(hintText: "kullanıcı adı"),
               ),
-              Expanded(
-                flex: 4,
-                child: Container(
-                  child: TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(hintText: 'Şifre'),
-                    obscureText: true,
-                  ),),),
-
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(hintText: 'Şifre'),
+                obscureText: true,
+              ),
+              SizedBox(
+                height: 20,
+              ),
               CustomElevatedButton(
                 onPressed: () async {
                   String uid = await AuthenticationService().signIn(
@@ -72,8 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.pushNamed(context, "/adminRegisterScreen");
                   } else if (uid == "yk1rRtMH7QZfCKGKMYyvq1pXS823") {
                     Navigator.pushNamed(context, "/adminPage");
-                  }
-                  else {
+                  } else {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -84,15 +75,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 buttonText: 'Giriş Yap',
               ),
-              Expanded(flex: 1,
-                  child: SizedBox(
-                  )),
             ],
           ),
         ),
       ),
     );
   }
+
   Container imageContainer(String logoImage, double height) {
     return Container(
       height: 180,
