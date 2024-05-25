@@ -1,100 +1,60 @@
 import 'package:carbon_foodprint_pro/login_screen.dart';
+import 'package:carbon_foodprint_pro/service/predictionService.dart';
 import 'package:carbon_foodprint_pro/utils/customColors.dart';
 import 'package:flutter/material.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 
 class CarbonFoodPrint extends StatefulWidget {
-
-  const CarbonFoodPrint({super.key});
+  const CarbonFoodPrint({Key? key}) : super(key: key);
 
   @override
   State<CarbonFoodPrint> createState() => _CarbonFoodPrintState();
 }
 
 class _CarbonFoodPrintState extends State<CarbonFoodPrint> {
-  TextEditingController sterilizasyonController = TextEditingController();
-  TextEditingController camasirhaneController = TextEditingController();
-  TextEditingController laboratuvarController = TextEditingController();
-  TextEditingController yemekhaneController = TextEditingController();
-  TextEditingController goruntulemeController = TextEditingController();
-  TextEditingController kantinController = TextEditingController();
+  TextEditingController poliklinikController = TextEditingController();
+  TextEditingController hastaneIdController = TextEditingController();
+  final PredictionService _predictionService = PredictionService();
+  late bool _modelLoaded;
+  double? _predictionResult;
 
-  var sterilizasyonResult = "Result will be displayed here";
-  var camasirhaneResult = "Result will be displayed here";
-  var laboratuvarResult = "Result will be displayed here";
-  var goruntulemeResult = "Result will be displayed here";
-  var yemekhaneResult = "Result will be displayed here";
-  var kantinResult = "Result will be displayed here";
-  late var interpreter;
+  // Dropdown-related variables
+  final List<String> _modelOptions = ["Surgery", "Inpatient", "ICU"];
+  String? _selectedModel;
 
   @override
   void initState() {
     super.initState();
-    loadModel();
+    _modelLoaded = false;
+    _loadModel(0);  // Load the default model initially
   }
 
-  loadModel() async {
-    interpreter = await Interpreter.fromAsset('assets/linear.tflite');
+  void _loadModel(int modelIndex) async {
+    try {
+      await _predictionService.loadModel(modelIndex);
+      setState(() {
+        _modelLoaded = true;
+      });
+    } catch (e) {
+      print('Error loading model: $e');
+    }
   }
 
-  void performSterilizasyonPrediction() {
-    int x = int.parse(sterilizasyonController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      sterilizasyonResult = "Result: " + output[0][0].toString();
-    });
-  }
+  void _predict() async {
+    if (!_modelLoaded) {
+      print("Model is not loaded yet.");
+      return;
+    }
 
-  void performCamasirhanePrediction() {
-    int x = int.parse(camasirhaneController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      camasirhaneResult = "Result: " + output[0][0].toString();
-    });
-  }
-
-  void performLaboratuvarPrediction() {
-    int x = int.parse(laboratuvarController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      laboratuvarResult = "Result: " + output[0][0].toString();
-    });
-  }
-
-  void performYemekhanePrediction() {
-    int x = int.parse(yemekhaneController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      yemekhaneResult = "Result: " + output[0][0].toString();
-    });
-  }
-
-  void performGoruntulemePrediction() {
-    int x = int.parse(goruntulemeController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      goruntulemeResult = "Result: " + output[0][0].toString();
-    });
-  }
-
-  void performKantinPrediction() {
-    int x = int.parse(kantinController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      kantinResult = "Result: " + output[0][0].toString();
-    });
+    try {
+      double Id = double.parse(hastaneIdController.text);
+      double poliklinik = double.parse(poliklinikController.text);
+      double prediction = await _predictionService.predict(Id, poliklinik);
+      setState(() {
+        _predictionResult = prediction;
+      });
+    } catch (e) {
+      print("Error during prediction: $e");
+    }
   }
 
   @override
@@ -110,71 +70,47 @@ class _CarbonFoodPrintState extends State<CarbonFoodPrint> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
-                controller: sterilizasyonController,
+                controller: hastaneIdController,
                 decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
+                  labelText: 'Hospital ID',
+                  hintText: 'Enter Hospital ID',
+                ),
               ),
-              ElevatedButton(
-                onPressed: performSterilizasyonPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(sterilizasyonResult),
               TextFormField(
-                controller: camasirhaneController,
+                controller: poliklinikController,
                 decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
+                  labelText: 'Policlinic Count',
+                  hintText: 'Enter Policlinic Count',
+                ),
               ),
+              const SizedBox(height: 30),
+              DropdownButton<String>(
+                value: _selectedModel,
+                hint: Text("Select Prediction Model"),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedModel = value;
+                    int modelIndex = _modelOptions.indexOf(value!);
+                    _loadModel(modelIndex);
+                  });
+                },
+                items: _modelOptions.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 50),
               ElevatedButton(
-                onPressed: performCamasirhanePrediction,
+                onPressed: _predict,
                 child: const Text("Predict"),
               ),
-              Text(camasirhaneResult),
-              TextFormField(
-                controller: laboratuvarController,
-                decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performLaboratuvarPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(laboratuvarResult),
-              TextFormField(
-                controller: yemekhaneController,
-                decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performYemekhanePrediction,
-                child: const Text("Predict"),
-              ),
-              Text(yemekhaneResult),
-              TextFormField(
-                controller: goruntulemeController,
-                decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performGoruntulemePrediction,
-                child: const Text("Predict"),
-              ),
-              Text(goruntulemeResult),
-              TextFormField(
-                controller: kantinController,
-                decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performKantinPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(kantinResult),
+              if (_predictionResult != null)
+                Text(
+                  'Prediction Result: $_predictionResult',
+                  style: TextStyle(fontSize: 20),
+                ),
             ],
           ),
         ),
@@ -184,15 +120,17 @@ class _CarbonFoodPrintState extends State<CarbonFoodPrint> {
 
   AppBar _buildAppBar() {
     return AppBar(
-        backgroundColor: CustomColors.appBarColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _onLogoutPressed,
-        ),
-        title: const Text('Carbon Foodprint Predictions')
+      centerTitle: true,
+      backgroundColor: CustomColors.appBarColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _onLogoutPressed,
+      ),
+      title: const Text('Carbon FoodPrint Predictions'),
     );
   }
-  void _onLogoutPressed() async {
+
+  void _onLogoutPressed() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

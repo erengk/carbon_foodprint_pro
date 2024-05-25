@@ -1,4 +1,3 @@
-import 'package:carbon_foodprint_pro/adminPage.dart';
 import 'package:carbon_foodprint_pro/carbonFoodPrint.dart';
 import 'package:carbon_foodprint_pro/patients.dart';
 import 'package:carbon_foodprint_pro/widgets/bottomNavBar.dart';
@@ -28,13 +27,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _getCurrentPage() {
     switch (_currentIndex) {
       case 0:
-        return const AdminPage();
-      case 1:
         return const CarbonFoodPrint();
-      case 2:
+      case 1:
         return const Patients();
       default:
-        return const AdminPage();
+        return const CarbonFoodPrint();
     }
   }
 

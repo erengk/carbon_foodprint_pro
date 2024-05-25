@@ -1,8 +1,6 @@
 import 'package:carbon_foodprint_pro/utils/customColors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-import 'adminPage.dart';
 import 'firebase_options.dart';
 import 'login_screen.dart';
 

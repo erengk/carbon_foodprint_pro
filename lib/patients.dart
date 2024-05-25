@@ -1,4 +1,5 @@
 import 'package:carbon_foodprint_pro/login_screen.dart';
+import 'package:carbon_foodprint_pro/service/predictionService.dart';
 import 'package:carbon_foodprint_pro/utils/customColors.dart';
 import 'package:flutter/material.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
@@ -13,64 +14,60 @@ class Patients extends StatefulWidget {
 
 class _PatientsState extends State<Patients> {
   TextEditingController poliklinikController = TextEditingController();
+  TextEditingController hastaneIdController = TextEditingController();
+  TextEditingController klinikController = TextEditingController();
   TextEditingController ameliyatController = TextEditingController();
-  TextEditingController servisController = TextEditingController();
-  TextEditingController yogunBakimController = TextEditingController();
 
-  var poliklinikResult = "Result will be displayed here";
-  var ameliyatResult = "Result will be displayed here";
-  var servisResult = "Result will be displayed here";
-  var yogunBakimResult = "Result will be displayed here";
-  late var interpreter;
+  final PredictionService _predictionService = PredictionService();
+  late bool _modelLoaded;
+  double? _predictionResult;
+
+  // Dropdown için eklenen değişkenler
+  final List<String> _modelOptions = [
+    "Sterilization",
+    "Refectory",
+    "Cafeteria",
+    "Laboratory",
+    "Radiology",
+    "Laundry"
+  ];
+  String? _selectedModel; // Seçili modeli saklamak için
 
   @override
   void initState() {
     super.initState();
-    loadModel();
+    _modelLoaded = false;
+    _loadModel(3);  // Başlangıçta varsayılan bir model yükle
   }
 
-  loadModel() async {
-    interpreter = await Interpreter.fromAsset('assets/linear.tflite');
+  void _loadModel(int modelIndex) async {
+    try {
+      await _predictionService.loadModel(modelIndex);
+      setState(() {
+        _modelLoaded = true;
+      });
+    } catch (e) {
+      print('Error loading model: $e');
+    }
   }
 
-  void performPoliklinikPrediction() {
-    int x = int.parse(poliklinikController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      poliklinikResult = "Result: " + output[0][0].toString();
-    });
-  }
+  void _predict() async {
+    if (!_modelLoaded) {
+      print("Model is not loaded yet.");
+      return;
+    }
 
-  void performAmeliyatPrediction() {
-    int x = int.parse(ameliyatController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      ameliyatResult = "Result: " + output[0][0].toString();
-    });
-  }
+    try {
+      double id = double.parse(hastaneIdController.text);
+      double poliklinik = double.parse(poliklinikController.text);
 
-  void performServisPrediction() {
-    int x = int.parse(servisController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      servisResult = "Result: " + output[0][0].toString();
-    });
-  }
-
-  void performYogunBakimPrediction() {
-    int x = int.parse(yogunBakimController.text);
-    var input = [x];
-    var output = List.filled(1 * 1, 0).reshape([1, 1]);
-    interpreter.run(input, output);
-    setState(() {
-      yogunBakimResult = "Result: " + output[0][0].toString();
-    });
+      double prediction = await _predictionService.predict(id, poliklinik);
+      setState(() {
+        _predictionResult = prediction;
+      });
+    } catch (e) {
+      print("Error during prediction: $e");
+    }
   }
 
   @override
@@ -86,49 +83,47 @@ class _PatientsState extends State<Patients> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
+                controller: hastaneIdController,
+                decoration: const InputDecoration(
+                  labelText: 'Hospital ID',
+                  hintText: 'Enter Hospital ID',
+                ),
+              ),
+              TextFormField(
                 controller: poliklinikController,
                 decoration: const InputDecoration(
-                    labelText: 'Poliklinik Sayısı',
-                    hintText: 'Poliklinik Sayısını Giriniz'),
+                  labelText: 'Patient Count',
+                  hintText: 'Enter Patient Count',
+                ),
               ),
+              const SizedBox(height: 30),
+              DropdownButton<String>(
+                value: _selectedModel,
+                hint: Text("Select Model"),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedModel = value;
+                    int modelIndex = _modelOptions.indexOf(value!) + 3; // 3 offset, çünkü model listesi 3'ten başlıyor
+                    _loadModel(modelIndex);
+                  });
+                },
+                items: _modelOptions.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 50),
               ElevatedButton(
-                onPressed: performPoliklinikPrediction,
+                onPressed: _predict,
                 child: const Text("Predict"),
               ),
-              Text(poliklinikResult),
-              TextFormField(
-                controller: ameliyatController,
-                decoration: const InputDecoration(
-                    labelText: 'Ameliyat Sayısı',
-                    hintText: 'Ameliyat Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performAmeliyatPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(ameliyatResult),
-              TextFormField(
-                controller: servisController,
-                decoration: const InputDecoration(
-                    labelText: 'Servis Yatan Hasta Sayısı',
-                    hintText: 'Servis Yatan Hasta Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performServisPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(servisResult),
-              TextFormField(
-                controller: yogunBakimController,
-                decoration: const InputDecoration(
-                    labelText: 'Yoğun Bakım Yatan Hasta Sayısı',
-                    hintText: 'Yoğun Bakım Yatan Hasta Sayısını Giriniz'),
-              ),
-              ElevatedButton(
-                onPressed: performYogunBakimPrediction,
-                child: const Text("Predict"),
-              ),
-              Text(yogunBakimResult),
+              if (_predictionResult != null)
+                Text(
+                  'Prediction Result: $_predictionResult',
+                  style: TextStyle(fontSize: 20),
+                ),
             ],
           ),
         ),
@@ -138,12 +133,13 @@ class _PatientsState extends State<Patients> {
 
   AppBar _buildAppBar() {
     return AppBar(
+      centerTitle: true,
         backgroundColor: CustomColors.appBarColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _onLogoutPressed,
         ),
-        title: const Text('Patient Predictions')
+        title: const Text('KgCO2 Predictions')
     );
   }
   void _onLogoutPressed() async {

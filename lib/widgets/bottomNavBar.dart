@@ -23,17 +23,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
       onTap: widget.onTap,
       items: const [
         Icon(
-          Icons.group_add,
+          Icons.add_card_rounded,
           size: 30,
           color: CustomColors.bodyBackgroundColor,
         ),
         Icon(
-          Icons.qr_code_scanner,
-          size: 30,
-          color: CustomColors.bodyBackgroundColor,
-        ),
-        Icon(
-          Icons.file_download,
+          Icons.add_circle_rounded,
           size: 30,
           color: CustomColors.bodyBackgroundColor,
         ),
