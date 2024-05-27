@@ -3,7 +3,6 @@ import 'package:carbon_foodprint_pro/service/authenticationService.dart';
 import 'package:carbon_foodprint_pro/widgets/popup.dart';
 import 'package:carbon_foodprint_pro/utils/customColors.dart';
 import 'package:carbon_foodprint_pro/widgets/customElevatedButton.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
